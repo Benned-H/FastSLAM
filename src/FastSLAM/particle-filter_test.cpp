@@ -19,7 +19,7 @@ TEST_CASE( "Default Particle" ){
         std::make_unique<FastSLAMParticles>(0.5, init_pose, test_manager);
 #else
     std::unique_ptr<FastSLAMParticles> test_particle =
-        std::make_unique<FastSLAMParticles>(0.5, starting_pose, nullptr);
+        std::make_unique<FastSLAMParticles>(0.5, init_pose, nullptr);
 #endif //USE_MOCK
 
     REQUIRE( test_particle->getNumLandMark() == 0 );

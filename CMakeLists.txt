@@ -19,6 +19,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 # library configs
 find_package (Eigen3 3.4 REQUIRED NO_MODULE)
 find_package (glog 0.4.0 REQUIRED)
+find_package (gflags REQUIRED)
 
 # testing set up
 option(BUILD_TESTS "Build Tests" OFF)

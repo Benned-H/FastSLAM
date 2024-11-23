@@ -1,2 +1,4 @@
 libeigen3-dev
 cmake
+libgoogle-glog0v5
+libgflags-dev
