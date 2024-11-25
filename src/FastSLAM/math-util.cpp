@@ -61,6 +61,7 @@ T MathUtil::genCDF( const std::vector<T>& aPdfVec, std::vector<T>& aTargetVec ){
     if (aPdfVec.empty()) return static_cast<T>(0);
 
     T running_sum = static_cast<T>(0);
+    aTargetVec.push_back(running_sum); // 0 needs to be in the cdf
     for (int i = 0; i < aPdfVec.size(); i++){
        running_sum += aPdfVec[i];
        aTargetVec.push_back(running_sum);

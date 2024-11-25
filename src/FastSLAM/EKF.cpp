@@ -37,6 +37,7 @@ Eigen::Matrix2f LMEKF2D::measJacobian() const {
 
 void LMEKF2D::calcMeasCov() {
     Eigen::Matrix2f G_n = this->measJacobian();
+    LOG(INFO) << "Measurement jacobian: \n" << G_n;
     m_meas_cov = G_n.transpose() * m_sigma * G_n + m_robot->getMeasNoise();
 }
 
@@ -73,8 +74,10 @@ float LMEKF2D::calcCPD() {
         return -1.0f;
     }
 
+    LOG(INFO) << "Calculating CPD";
     this->calcMeasCov();
     if (m_meas_cov.determinant() == 0) {
+        LOG(WARNING) << "Measurement covariance doesn't have full rank";
         return -1.0f;
     }
 
@@ -93,7 +96,7 @@ const struct Point2D& LMEKF2D::getLMEst() const {
 }
 
 void LMEKF2D::updateObservation(const struct Observation2D &new_obs) {
-    std::cout << "Updating observation: range=" << new_obs.range_m 
+    LOG(INFO) << "Updating observation: range=" << new_obs.range_m
               << ", bearing=" << new_obs.bearing_rad << std::endl;
     m_curr_obs = new_obs;
 }

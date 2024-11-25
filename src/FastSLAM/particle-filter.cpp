@@ -19,7 +19,8 @@ FastSLAMPF::FastSLAMPF(std::shared_ptr<RobotManager2D> rob_ptr,
         auto particle_pair = std::make_pair(i, std::move(new_particle));
         m_particle_set.insert(std::move(particle_pair));
 
-        m_particle_weights.push_back(1.0f / static_cast<float>(m_num_particles));
+        m_particle_weights.push_back(0.0f);
+        // m_particle_weights.push_back(1.0f / static_cast<float>(m_num_particles));
     }
 }
 
@@ -74,6 +75,7 @@ int FastSLAMPF::drawWithReplacement(const std::vector<float>& cdf_vec, float sam
 }
 
 void FastSLAMPF::reSampleParticles(){
+    LOG(INFO) << "Re-drawing particles";
     std::vector<float> cdf_table;
     float total_weight = MathUtil::genCDF(m_particle_weights, cdf_table);
     float sampled_weight;
@@ -97,15 +99,20 @@ void FastSLAMPF::reSampleParticles(){
 
 void FastSLAMPF::updateFilter(const struct Pose2D &a_robot_pose_mean,
                          std::queue<struct Observation2D> &a_sighting_queue) {
-    while (!a_sighting_queue.empty()){
-        int idx = 0;
-        for (auto& it: m_particle_set){
-            LOG(INFO) << "Updating particle #" << it.first;
-            auto rob_pose_sampled = samplePose(a_robot_pose_mean);
-            m_particle_weights[idx] += it.second->updateParticle(
-                a_sighting_queue.front(), rob_pose_sampled);
-            LOG(INFO) << "resulting particle weight: " << m_particle_weights[idx];
-            idx++;
+    for (auto& particle: m_particle_set){
+        particle.second->updatePose(samplePose(a_robot_pose_mean));
+    }
+
+    while (!a_sighting_queue.empty()) {
+        LOG(INFO) << "Processing landmark queue";
+        LOG(INFO) << "---------------------------";
+        for (auto& particle: m_particle_set){
+            const int particle_idx = particle.first;
+            LOG(INFO) << "Updating particle #" << particle_idx;
+            // TODO: add better error handling here
+            m_particle_weights[particle_idx] += particle.second->updateParticle(
+                a_sighting_queue.front());
+            LOG(INFO) << "resulting particle weight: " << m_particle_weights[particle_idx];
         }
         a_sighting_queue.pop();
     }

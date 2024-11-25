@@ -34,7 +34,12 @@ private:
     int m_data_label;
 
     /**
-     * @brief collection of all landmark EKFs
+     * @brief importance factor of current observation to landmark
+     */
+     float m_curr_max_wn;
+
+    /**
+     * @brief collection of all landmark EKFs and their
      */
     std::vector<std::pair<std::unique_ptr<LMEKF2D>, int>> m_lmekf_bank;
 
@@ -60,11 +65,6 @@ private:
      */
     PF_RET updateLMBelief(const struct Observation2D& curr_obs);
 
-    /**
-     * @brief update local copy of current robot pose
-     */
-    PF_RET updatePose(const struct Pose2D& new_pose);
-
 
 #ifdef LM_CLEANUP
     /**
@@ -86,6 +86,7 @@ public:
                                std::shared_ptr<RobotManager2D> rob_mgr):
     m_importance_factor(p_0), m_robot_pose(starting_pose), m_robot(rob_mgr){
         m_data_label = -1;
+        m_curr_max_wn = 0.0f;
     }
 
     /**
@@ -101,20 +102,31 @@ public:
     int getNumLandMark() const { return m_lmekf_bank.size(); };
 
     /**
+     * @brief update local copy of current robot pose
+     * @param[in] new_pose new pose based on odometry
+     */
+    PF_RET updatePose(const struct Pose2D& new_pose);
+
+    /**
      * @brief class template method, runs landmark data association and belief update
      *
      * @param[in] new_obs: new robot landmark observation, unclassified
      * @param[in] new_pose: new robot pose estimate
      * @return maximum importance factor for resampling
      */
-    float updateParticle(const struct Observation2D& new_obs,
-                         const struct Pose2D& new_pose);
+    const float updateParticle(const struct Observation2D& new_obs);
 
      /**
      * @brief finds the coordinates of all the landmarks assosciated with a particle
      * @return queue of all the landmark coordinates 
      */
     const std::vector<struct Point2D> getLandmarkCoordinates() const;
+
+    /**
+     * @brief get current max importance factor as particle weight
+     * @return const reference to current max importance factor
+     */
+    const float& getParticleWeight() const { return m_curr_max_wn; }
 };
 
 class FastSLAMPF {
